@@ -15,7 +15,7 @@ class WPCF7_CleanTalk extends WPCF7_Service {
 	 * @var CleanTalkCF7SDK
 	 */
 	public $cleantalk_sdk;
-	private $vendor_agent = 'wpcf7' . WPCF7_VERSION;
+	private $vendor_agent = 'wpcf7_' . WPCF7_VERSION;
 
 	public static function get_instance() {
 		if ( empty( self::$instance ) ) {
