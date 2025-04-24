@@ -12,10 +12,11 @@ class WPCF7_CleanTalk extends WPCF7_Service {
 	private $access_key;
 	private $key_verified = false;
 	/**
-	 * @var CleanTalkCF7SDK
+	 * @var CleanTalkCF7SDK\CleanTalkSDK
 	 */
 	public $cleantalk_sdk;
-	private $vendor_agent = 'wpcf7_' . WPCF7_VERSION;
+	public $vendor_agent = 'contactform7';
+	public $vendor_version = WPCF7_VERSION;
 
 	public static function get_instance() {
 		if ( empty( self::$instance ) ) {
@@ -27,7 +28,12 @@ class WPCF7_CleanTalk extends WPCF7_Service {
 
 	private function __construct() {
 		$this->access_key = WPCF7::get_option('cleantalk');
-		$this->cleantalk_sdk = new CleanTalkCF7SDK\CleanTalkSDK($this->vendor_agent,null, false);
+		$this->cleantalk_sdk = new CleanTalkCF7SDK\CleanTalkSDK(
+			$this->vendor_agent,
+			$this->vendor_version,
+			null,
+			false
+		);
 	}
 
 
@@ -53,8 +59,8 @@ class WPCF7_CleanTalk extends WPCF7_Service {
 
 	public function link() {
 		echo wpcf7_link(
-			'https://cleantalk.org',
-			'CleanTalk'
+			$this->cleantalk_sdk::getCleanTalkUTMLink($this->vendor_agent, 'my'),
+			'CleanTalk Dashboard'
 		);
 	}
 
@@ -75,15 +81,14 @@ class WPCF7_CleanTalk extends WPCF7_Service {
 
 		$form_data = WPCF7_Submission::get_instance()->get_posted_data();
 
-		$custom_cleantalk_message = $this->cleantalk_sdk->gatherMessage($form_data, $this->get_access_key());
+		$custom_sdk_message = $this->cleantalk_sdk->getDefaultHTTPMessage($form_data, $this->get_access_key());
 
-		$custom_cleantalk_message->sender_message = isset($form_data['your-message'])
-			? $form_data['your-message']
-			: '';
-
-		$cleantalk_response = $this->cleantalk_sdk->getCleanTalkResponse(
-			$form_data, $custom_cleantalk_message
-		);
+		$custom_sdk_message->message = !empty($form_data['your-message'])
+			? (!is_scalar($form_data['your-message'])
+				? serialize($form_data['your-message'])
+				: $form_data['your-message'])
+			: null;
+		$cleantalk_response = $this->cleantalk_sdk->getCleanTalkResponse($custom_sdk_message);
 
 		if (1 == $cleantalk_response->allow) {
 			$is_human = true;

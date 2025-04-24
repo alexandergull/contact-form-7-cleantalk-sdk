@@ -135,13 +135,13 @@ function wpcf7_admin_warnings_cleantalk( $page, $action, $object ) {
 		$message = sprintf(
 			esc_html(
 				__(
-					"CleanTalk access key is invalid. Please, visit your %s to get a valid key ",
+					"CleanTalk access key is invalid or expired. Please, visit your %s to get a valid key ",
 					'contact-form-7'
 				)
 			),
 			wpcf7_link(
-				__( 'cleantalk.org/my', 'contact-form-7' ),
-				__( 'CleanTalk dashboard', 'contact-form-7' )
+				$service->cleantalk_sdk::getCleanTalkUTMLink($service->vendor_agent,'my'),
+				__( 'CleanTalk Dashboard', 'contact-form-7' )
 			)
 		);
 
